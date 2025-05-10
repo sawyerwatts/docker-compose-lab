@@ -1,3 +1,8 @@
+# NOTE: ${COMPOSE_PROJECT_NAME} can be used to configure the name of the project. The top-level name
+#   key does similar things. The default is the compose.yml's containing directory.
+
+# NOTE: a .env in the working dir will be ready, and env vars can be used here in syntax ${VAR}
+
 services:
 
   psql:
@@ -10,8 +15,8 @@ services:
     networks:
       - network
     environment:
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_USER: sawyer
+      POSTGRES_PASSWORD: pizza
       POSTGRES_DB: eligdb
 
   pgadmin:
@@ -22,8 +27,8 @@ services:
     networks:
       - network
     environment:
-      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL}"
-      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_DEFAULT_PASSWORD}"
+      PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
+      PGADMIN_DEFAULT_PASSWORD: pizza
 
 volumes:
   psql_data:

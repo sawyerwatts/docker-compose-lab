@@ -30,16 +30,19 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
+  # NOTE: If you want to run a script after a service starts up, use `depends_on`, make
+  # `working_dir: /setup`, make a volume to map the script location inside the container, and use
+  # a `command` or `entrypoint` that executes the script. To access `localhost` of another service,
+  # use `network_mode: service:MY_SVC` to run within the same area as MY_SVC.
+  # That said, consider if it would be better to make an image that contains the setup.
+
 volumes:
   psql_data:
 
 networks:
   network:
 
-# TODO: redis
+# TODO: .net containers
+#   - coding and building w/in a container
 
 # TODO: db migration container?
-
-# TODO: blob?
-
-# TODO: .net dev container?

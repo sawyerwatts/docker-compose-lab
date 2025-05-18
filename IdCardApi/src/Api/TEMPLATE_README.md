@@ -37,13 +37,6 @@ idempotency tokens. Depending on your environment, it may be mildly to severely
 critical to supplement that type with a persistance/distributed cache and/or
 sticky sessions.
 
-#### Authentication
-
-If an API key or JWT were selected, the `appsettings*.json` files are not
-configured with any authentication settings. These will need to be set up under
-the `"Middleware"` section of the `IConfiguration`. See the chosen
-authentication class for more.
-
 ### Request size limiting
 
 This template does *not* have request size limits in place. As such, it is

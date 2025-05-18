@@ -4,6 +4,7 @@ COPY ./.editorconfig ./*.sln ./
 COPY ./src ./src/
 COPY ./test ./test/
 RUN dotnet restore
+RUN dotnet format --verify-no-changes
 RUN dotnet build
 RUN dotnet test
 RUN dotnet publish ./src/Api/ -o out

@@ -30,7 +30,9 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # TODO: db migration container, if I'm feeling spicy
+  # TODO: init and connect to psql
+
+  # TODO: how pull actual image when debugging?
 
   # NOTE: If you want to run a script after a service starts up, use `depends_on`, make
   # `working_dir: /setup`, make a volume to map the script location inside the container, and use

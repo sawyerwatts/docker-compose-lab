@@ -11,14 +11,16 @@ services:
     ports:
       - "[::1]:5432:5432"
     volumes:
-      - psql_data:/var/lib/postgresql/data
+      - psql_data:/var/lib/postgresql/data/
+      - ./dev/psql/:/docker-entrypoint-initdb.d/
     networks:
       - network
     environment:
+      POSTGRES_DB: eligdb
       POSTGRES_USER: sawyer
       POSTGRES_PASSWORD: pizza
-      POSTGRES_DB: eligdb
 
+  # TODO: It'd be slick to auto-sign in and auto-register the psql server
   pgadmin:
     image: dpage/pgadmin4
     restart: always
@@ -30,9 +32,17 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # TODO: init and connect to psql
+  # TODO: connect to psql in .net and add healthcheck
 
   # TODO: how pull actual image when debugging?
+
+  # TODO: redis?
+
+  # TODO: mssql?
+
+  # TODO: azurite?
+
+  # TODO: after making a lotta services, tool to auto gen compose+dirs?
 
   # NOTE: If you want to run a script after a service starts up, use `depends_on`, make
   # `working_dir: /setup`, make a volume to map the script location inside the container, and use

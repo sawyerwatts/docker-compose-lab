@@ -36,7 +36,6 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # TODO: db/tables/seed
   # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
   # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
   plandb:
@@ -51,13 +50,14 @@ services:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
 
-  # TODO: how pull actual image when debugging?
+  # TODO: make a reset service to seed plandb
+  #   beginning of docs: https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker?view=sql-server-ver16&tabs=cli&pivots=cs1-bash#connect-to-sql-server
 
   # TODO: redis?
 
   # TODO: azurite?
 
-  # TODO: after making a lotta services, tool to auto gen compose+dirs?
+  # TODO: how pull actual DB image when debugging?
 
   # NOTE: If you want to run a script after a service starts up, use `depends_on`, make
   # `working_dir: /setup`, make a volume to map the script location inside the container, and use

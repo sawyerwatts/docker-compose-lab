@@ -32,8 +32,6 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # TODO: connect to psql in .net and add healthcheck
-
   # TODO: how pull actual image when debugging?
 
   # TODO: redis?

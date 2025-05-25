@@ -117,7 +117,7 @@ dotnet_remove_unnecessary_suppression_exclusions = none
 #### C# Coding Conventions ####
 [*.cs]
 
-max_line_length = 80
+max_line_length = 100
 trim_trailing_whitespace = true
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 

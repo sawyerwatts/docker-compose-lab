@@ -30,7 +30,8 @@ builder.Services.AddSerilog();
 // Configuration should be completed at this point.
 
 builder.Services.AddHealthChecks()
-    .AddCheck<EligDbHealthCheck>("EligDb");
+    .AddCheck<EligDbHealthCheck>("EligDb")
+    .AddCheck<PlanDbHealthCheck>("PlanDb");
 
 builder.Services
     .AddControllers(options =>

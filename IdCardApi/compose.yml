@@ -65,11 +65,11 @@ services:
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
-    command: [ "./mssql-db-init.sh", "plandb" ]
+    command: [ "./reset-mssql-db.sh", "plandb" ]
 
-  # TODO: redis?
+  # TODO: redis? https://hub.docker.com/_/redis
 
-  # TODO: azurite?
+  # TODO: azurite? https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
 
   # TODO: how pull actual DB image when debugging?
 

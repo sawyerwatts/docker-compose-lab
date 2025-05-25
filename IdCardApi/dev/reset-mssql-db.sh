@@ -37,7 +37,7 @@ fi
 echo -e "\n> Finding and applying SQL files"
 find "./$db" -type f -name "*.sql" -print0 | while read -r -d '' file
 do
-  echo -e "\n> Applying file $file"
+  echo -e "\n> Applying $file"
   /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -b -d "$db" -i "$file"
 done
 

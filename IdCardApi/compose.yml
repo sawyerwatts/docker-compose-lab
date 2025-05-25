@@ -36,12 +36,15 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # TODO: volume??
   # TODO: db/tables/seed
+  # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
+  # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
   plandb:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "[::1]:1433:1433"
+    volumes:
+      - plandb_data:/var/opt/mssql/
     networks:
       - network
     environment:
@@ -64,6 +67,7 @@ services:
 
 volumes:
   eligdb_data:
+  plandb_data:
 
 networks:
   network:

@@ -1,5 +1,6 @@
 using Dapper;
 
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using Npgsql;
@@ -14,9 +15,9 @@ public class PlanDbHealthCheck(IConfiguration config) : IHealthCheck
         HealthCheckContext context,
         CancellationToken cancellationToken)
     {
-        await using NpgsqlConnection connex = new(_planDbConnexString);
+        await using SqlConnection connex = new(_planDbConnexString);
         _ = (await connex.QueryAsync<int>(new CommandDefinition(
-                "select top 1 ck from plan", cancellationToken: cancellationToken)))
+                "select top 1 ck from [plan]", cancellationToken: cancellationToken)))
             .Single();
         return HealthCheckResult.Healthy();
     }

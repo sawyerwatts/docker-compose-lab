@@ -1,3 +1,7 @@
+using System.Globalization;
+
+using Microsoft.Data.SqlClient;
+
 using Npgsql;
 
 namespace IdCardApi;
@@ -27,10 +31,10 @@ public static class ConfigExtensions
         NpgsqlConnectionStringBuilder builder = new()
         {
             Host = host,
-            Port = int.Parse(port),
+            Port = int.Parse(port, provider: CultureInfo.InvariantCulture),
             Database = "eligdb",
             Username = username,
-            Password = password
+            Password = password,
         };
         return builder.ConnectionString;
     }
@@ -55,13 +59,17 @@ public static class ConfigExtensions
         if (string.IsNullOrWhiteSpace(password))
             throw new InvalidOperationException("The plan DB's password was not configured");
 
-        NpgsqlConnectionStringBuilder builder = new()
+        string encrypt = config.GetConnectionString($"{prefix}Encrypt")!;
+        if (string.IsNullOrWhiteSpace(encrypt))
+            encrypt = true.ToString();
+
+        SqlConnectionStringBuilder builder = new()
         {
-            Host = host,
-            Port = int.Parse(port),
-            Database = "plandb",
-            Username = username,
-            Password = password
+            DataSource = $"{host},{int.Parse(port, provider: CultureInfo.InvariantCulture)}",
+            InitialCatalog = "plandb",
+            UserID = username,
+            Password = password,
+            Encrypt = bool.Parse(encrypt),
         };
         return builder.ConnectionString;
     }

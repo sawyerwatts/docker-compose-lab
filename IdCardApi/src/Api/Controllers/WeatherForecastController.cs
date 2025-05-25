@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 using Asp.Versioning;
 
@@ -46,7 +47,7 @@ public class WeatherForecastController : ControllerBase
     public Task<ActionResult<IEnumerable<WeatherForecast>>> GetAsync(
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("{Dtm}", DateTime.Now.ToString());
+        _logger.LogInformation("{Dtm}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
         ActionResult<IEnumerable<WeatherForecast>> resp = Ok(
             Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

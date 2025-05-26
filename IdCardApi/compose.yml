@@ -6,8 +6,8 @@
 
 services:
 
-  # https://hub.docker.com/_/postgres/
   eligdb:
+    # https://hub.docker.com/_/postgres/
     image: postgres
     restart: always
     ports:
@@ -22,9 +22,9 @@ services:
       POSTGRES_USER: sawyer
       POSTGRES_PASSWORD: pizza
 
-  # https://www.pgadmin.org/docs/pgadmin4/9.3/container_deployment.html
-  # TODO: It'd be slick to auto-sign in and auto-register the eligdb server
   pgadmin:
+    # https://www.pgadmin.org/docs/pgadmin4/9.3/container_deployment.html
+    # TODO: It'd be slick to auto-sign in and auto-register the eligdb server
     image: dpage/pgadmin4
     restart: always
     depends_on:
@@ -37,9 +37,9 @@ services:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
-  # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
-  # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
   plandb:
+    # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
+    # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: always
     ports:
@@ -52,10 +52,10 @@ services:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
 
-  # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for
-  # Sawyer's local playground, and it's a decent example of initializing a container (although it's
-  # always worth considering if an initialization container would be more appropriate).
   reset_plandb:
+    # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for
+    # Sawyer's local playground, and it's a decent example of initializing a container (although it's
+    # always worth considering if an initialization container would be more appropriate).
     image: mcr.microsoft.com/mssql/server:2022-latest
     depends_on:
       - plandb
@@ -69,19 +69,19 @@ services:
       MSSQL_SA_PASSWORD: Pizza1234!@#$
     command: [ "./reset-mssql-db.sh", "plandb" ]
 
-  # https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
-  # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=visual-studio%2Cblob-storage
-  # https://github.com/Azure/Azurite
-  # Default account name: devstoreaccount1
-  # Default account key: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
-  # Default connection string for all Azurite services: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
-  # Default connection string for Azurite blob service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
-  # Default connection string for Azurite queue service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
-  # Default connection string for Azurite table service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
-  # The docs (above) have info on using https connection strings.
-  # To create more accounts, create env var AZURITE_ACCOUNTS with value "account1:key1;account2:key1:key2"
-  #     (where the keys are base 64 encoded). Note that this will disable the default account.
   azurite:
+    # https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
+    # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=visual-studio%2Cblob-storage
+    # https://github.com/Azure/Azurite
+    # Default account name: devstoreaccount1
+    # Default account key: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+    # Default connection string for all Azurite services: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+    # Default connection string for Azurite blob service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
+    # Default connection string for Azurite queue service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
+    # Default connection string for Azurite table service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+    # The docs (above) have info on using https connection strings.
+    # To create more accounts, create env var AZURITE_ACCOUNTS with value "account1:key1;account2:key1:key2"
+    #     (where the keys are base 64 encoded). Note that this will disable the default account.
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
     ports:
@@ -96,10 +96,10 @@ services:
 
   # TODO: impl blob container health check
 
-  # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
-  # https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
-  # https://learn.microsoft.com/en-us/cli/azure/?view=azure-cli-latest
   reset_azurite_container_id_card:
+    # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
+    # https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
+    # https://learn.microsoft.com/en-us/cli/azure/?view=azure-cli-latest
     image: mcr.microsoft.com/azure-cli
     depends_on:
       - azurite

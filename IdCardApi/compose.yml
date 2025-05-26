@@ -12,6 +12,9 @@
 #networks:
 #  shared_network
 
+# TODO: if there's a way to bring down a specific service and destroy it's volume, update the reset
+# services to be init-if-empty (setup?) services
+
 # TODO: how pull actual (DB) image when debugging?
 
 services:
@@ -91,7 +94,7 @@ services:
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
     ports:
-      # Azure Storage Explorer doesn't play nice with ipv6, so localhost is used.
+      # Azure Storage Explorer doesn't play nice with ipv6, so localhost seemingly must used.
       - "127.0.0.1:10000:10000"
       - "127.0.0.1:10001:10001"
       - "127.0.0.1:10002:10002"
@@ -121,11 +124,8 @@ services:
     restart: always
     ports:
       - "127.0.0.1:6379:6379"
-    # Supposedly, if you want to save snapshots every second when at least one write occurs, the
-    #   following will be your friend.
-    # volumes:
-      # - redis_data:/data
-    # command: redis-server --save 1 1 --log-level warning
+    # The docs suggest that it's possible to have redis create snapshots and to make a volume for
+    # those snapshots, but it was being weird, and it's redis, so whatev.
 
 volumes:
   eligdb_data:

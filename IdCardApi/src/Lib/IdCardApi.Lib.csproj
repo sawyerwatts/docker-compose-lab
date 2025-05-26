@@ -11,6 +11,7 @@
     <PackageReference Include="dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="NRedisStack" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

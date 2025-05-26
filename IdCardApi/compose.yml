@@ -40,6 +40,7 @@ services:
   # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
   plandb:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: always
     ports:
       - "[::1]:1433:1433"
     volumes:
@@ -53,7 +54,7 @@ services:
   # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for
   # Sawyer's local playground, and it's a decent example of initializing a container (although it's
   # always worth considering if an initialization container would be more appropriate).
-  reset-plandb:
+  reset_plandb:
     image: mcr.microsoft.com/mssql/server:2022-latest
     depends_on:
       - plandb
@@ -67,15 +68,30 @@ services:
       MSSQL_SA_PASSWORD: Pizza1234!@#$
     command: [ "./reset-mssql-db.sh", "plandb" ]
 
+  # https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
+  # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=visual-studio%2Cblob-storage
+  # https://github.com/Azure/Azurite
+  # TODO: accounts, containers, seed, etc?
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    restart: always
+    ports:
+      - "127.0.0.1:10000:10000"
+      - "127.0.0.1:10001:10001"
+      - "127.0.0.1:10002:10002"
+    volumes:
+      - azurite_data:/data/
+    networks:
+      - network
+
   # TODO: redis? https://hub.docker.com/_/redis
 
-  # TODO: azurite? https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
-
-  # TODO: how pull actual DB image when debugging?
+  # TODO: how pull actual (DB) image when debugging?
 
 volumes:
   eligdb_data:
   plandb_data:
+  azurite_data:
 
 networks:
   network:

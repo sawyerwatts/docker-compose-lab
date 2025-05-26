@@ -19,14 +19,16 @@ then
   exit 1
 fi
 
-sqlcmd_prefix="/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P '$MSSQL_SA_PASSWORD' -b"
+function sqlcmd()
+{
+  /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -b "$@"
+}
 
 echo -e "\n> Dropping DB $db (if exists)"
-bash -c "$sqlcmd_prefix -Q 'drop database if exists $db'"
+sqlcmd -Q "drop database if exists $db"
 
 echo -e "\n> Creating DB $db"
-bash -c "$sqlcmd_prefix -Q 'create database $db'"
-
+sqlcmd -Q "create database $db"
 
 if [[ ! -d "./$db/" ]]
 then
@@ -38,7 +40,7 @@ echo -e "\n> Finding and applying SQL files"
 find "./$db" -type f -name "*.sql" -print0 | while read -r -d '' file
 do
   echo -e "\n> Applying $file"
-  /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -b -d "$db" -i "$file"
+  sqlcmd -d "$db" -i "$file"
 done
 
 echo -e "\n> Completed normally"

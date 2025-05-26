@@ -12,9 +12,6 @@
 #networks:
 #  shared_network
 
-# TODO: if there's a way to bring down a specific service and destroy it's volume, update the reset
-# services to be init-if-empty (setup?) services
-
 # TODO: how pull actual (DB) image when debugging?
 
 services:
@@ -59,7 +56,7 @@ services:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
 
-  reset_plandb:
+  init_plandb:
     # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for
     # Sawyer's local playground, and it's a decent example of initializing a container (although it's
     # always worth considering if an initialization container would be more appropriate).
@@ -74,7 +71,7 @@ services:
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
-    command: [ "./reset-mssql-db.sh", "plandb" ]
+    command: [ "./init-mssql-db.sh", "plandb" ]
 
   azurite:
     # https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
@@ -115,8 +112,6 @@ services:
     environment:
       AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
     command: [ "./reset-azurite-container.sh", "id-card" ]
-
-  # TODO: write healthcheck for redis
 
   redis:
     # https://hub.docker.com/_/redis

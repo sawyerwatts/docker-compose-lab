@@ -46,8 +46,14 @@ then
   exit 1
 fi
 
-echo -e "\n> Dropping DB $db (if exists)"
-sqlcmd -Q "drop database if exists $db"
+result=$(sqlcmd -Q "if db_id('$db') is not null print 'exists'" || true)
+if [[ "$result" == "exists" ]]
+then
+  echo -e "\n> The database $db already exists, will not initialize"
+  exit 0
+fi
+
+echo -e "\n> Confirmed that DB $db does not exist, continuing with initialization"
 
 echo -e "\n> Creating DB $db"
 sqlcmd -Q "create database $db"

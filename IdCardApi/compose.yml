@@ -10,7 +10,7 @@ services:
     image: postgres
     restart: always
     ports:
-      - "[::1]:5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - eligdb_data:/var/lib/postgresql/data/
       - ./dev/eligdb/:/docker-entrypoint-initdb.d/
@@ -29,7 +29,7 @@ services:
     depends_on:
       - eligdb
     ports:
-      - "[::1]:5050:80"
+      - "127.0.0.1:5050:80"
     networks:
       - network
     environment:
@@ -42,7 +42,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: always
     ports:
-      - "[::1]:1433:1433"
+      - "127.0.0.1:1433:1433"
     volumes:
       - plandb_data:/var/opt/mssql/
     networks:

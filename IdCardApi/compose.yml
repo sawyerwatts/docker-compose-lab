@@ -13,7 +13,7 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - eligdb_data:/var/lib/postgresql/data/
-      - ./dev/eligdb/:/docker-entrypoint-initdb.d/
+      - ./compose/eligdb/:/docker-entrypoint-initdb.d/
     networks:
       - network
     environment:
@@ -62,7 +62,7 @@ services:
     network_mode: service:plandb
     working_dir: /setup
     volumes:
-      - ./dev/:/setup/
+      - ./compose/:/setup/
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$

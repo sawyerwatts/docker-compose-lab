@@ -1,7 +1,8 @@
 # NOTE: ${COMPOSE_PROJECT_NAME} can be used to configure the name of the project. The top-level name
 #   key does similar things. The default is the compose.yml's containing directory.
 
-# NOTE: a .env in the working dir will be ready, and env vars can be used here in syntax ${VAR}
+# NOTE: a .env in the working dir will be ready, and env vars can be used here in syntax ${VAR}.
+#   Also, this file could def stand to make better use of vars, but it's fine.
 
 services:
 
@@ -15,7 +16,7 @@ services:
       - eligdb_data:/var/lib/postgresql/data/
       - ./compose/eligdb/:/docker-entrypoint-initdb.d/
     networks:
-      - network
+      - shared_network
     environment:
       POSTGRES_DB: eligdb
       POSTGRES_USER: sawyer
@@ -31,7 +32,7 @@ services:
     ports:
       - "127.0.0.1:5050:80"
     networks:
-      - network
+      - shared_network
     environment:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
@@ -46,7 +47,7 @@ services:
     volumes:
       - plandb_data:/var/opt/mssql/
     networks:
-      - network
+      - shared_network
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
@@ -60,9 +61,9 @@ services:
       - plandb
     # This networking mode will allow this container to access plandb on localhost.
     network_mode: service:plandb
-    working_dir: /setup
     volumes:
       - ./compose/:/setup/
+    working_dir: /setup
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
@@ -71,7 +72,15 @@ services:
   # https://mcr.microsoft.com/en-us/artifact/mar/azure-storage/azurite/about
   # https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=visual-studio%2Cblob-storage
   # https://github.com/Azure/Azurite
-  # TODO: accounts, containers, seed, etc?
+  # Default account name: devstoreaccount1
+  # Default account key: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+  # Default connection string for all Azurite services: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+  # Default connection string for Azurite blob service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
+  # Default connection string for Azurite queue service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
+  # Default connection string for Azurite table service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
+  # The docs (above) have info on using https connection strings.
+  # To create more accounts, create env var AZURITE_ACCOUNTS with value "account1:key1;account2:key1:key2"
+  #     (where the keys are base 64 encoded). Note that this will disable the default account.
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
@@ -83,7 +92,22 @@ services:
     volumes:
       - azurite_data:/data/
     networks:
-      - network
+      - shared_network
+
+  # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
+  # https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
+  # https://learn.microsoft.com/en-us/cli/azure/?view=azure-cli-latest
+  reset_azurite_container_id_card:
+    image: mcr.microsoft.com/azure-cli
+    depends_on:
+      - azurite
+    network_mode: service:azurite
+    volumes:
+      - ./compose/:/setup/
+    working_dir: /setup
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
+    command: [ "./reset-azurite-container.sh", "id-card" ]
 
   # TODO: redis? https://hub.docker.com/_/redis
 
@@ -95,4 +119,4 @@ volumes:
   azurite_data:
 
 networks:
-  network:
+  shared_network:

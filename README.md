@@ -13,12 +13,18 @@ For all the commands in this file, the following alias exists (because Docker on
 alias sdocker='sudo docker'
 ```
 
+Recall that the following can be used to interactively play with an image.
+
+```shell
+sdocker run -it IMAGE
+```
+
 ## IdCardApi
 
 This is a (stubbed) API to build ID cards from the database, and cache the result.
 
 ```shell
-sdocker compose down -v; sdocker compose up -d && sdocker compose ps && sdocker ps && sdocker volume ls && sdocker network ls
+sdocker compose down -v; sdocker compose up -d && sdocker compose ps -a && sdocker ps && sdocker volume ls && sdocker network ls
 ```
 
 Here's how to build the image for the API (this needs to be ran from the sln dir because Docker

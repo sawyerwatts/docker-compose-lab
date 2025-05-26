@@ -31,7 +31,8 @@ builder.Services.AddSerilog();
 
 builder.Services.AddHealthChecks()
     .AddCheck<EligDbHealthCheck>("EligDb")
-    .AddCheck<PlanDbHealthCheck>("PlanDb");
+    .AddCheck<PlanDbHealthCheck>("PlanDb")
+    .AddCheck<BlobContainerHealthCheck>("IdCardBlobContainer");
 
 builder.Services
     .AddControllers(options =>

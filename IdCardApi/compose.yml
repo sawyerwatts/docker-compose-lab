@@ -80,8 +80,10 @@ services:
     # Default connection string for Azurite queue service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
     # Default connection string for Azurite table service: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;
     # The docs (above) have info on using https connection strings.
+    # Recall that adding "/{container_name}" to the end of the blob container URL will drill to that
+    #   container specifically.
     # To create more accounts, create env var AZURITE_ACCOUNTS with value "account1:key1;account2:key1:key2"
-    #     (where the keys are base 64 encoded). Note that this will disable the default account.
+    #   (where the keys are base 64 encoded). Note that this will disable the default account.
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
     ports:
@@ -93,8 +95,6 @@ services:
       - azurite_data:/data/
     networks:
       - shared_network
-
-  # TODO: impl blob container health check
 
   reset_azurite_container_id_card:
     # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about

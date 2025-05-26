@@ -1,8 +1,18 @@
-# NOTE: ${COMPOSE_PROJECT_NAME} can be used to configure the name of the project. The top-level name
+# ${COMPOSE_PROJECT_NAME} can be used to configure the name of the project. The top-level name
 #   key does similar things. The default is the compose.yml's containing directory.
 
-# NOTE: a .env in the working dir will be ready, and env vars can be used here in syntax ${VAR}.
+# A .env in the working dir will be ready, and env vars can be used here in syntax ${VAR}.
 #   Also, this file could def stand to make better use of vars, but it's fine.
+
+# There is a top level element `networks` that is very similar to `volumes` (at it is attached to
+# specific services very similarly): it allows you to define networks. An example is below. All
+# services within the compose project share a default network, so it isn't necessary unless more
+# fine-grained network segmentation is desired between services (or if you want to have a network
+# driver that isn't bridge).
+#networks:
+#  shared_network
+
+# TODO: how pull actual (DB) image when debugging?
 
 services:
 
@@ -15,8 +25,6 @@ services:
     volumes:
       - eligdb_data:/var/lib/postgresql/data/
       - ./compose/eligdb/:/docker-entrypoint-initdb.d/
-    networks:
-      - shared_network
     environment:
       POSTGRES_DB: eligdb
       POSTGRES_USER: sawyer
@@ -31,8 +39,6 @@ services:
       - eligdb
     ports:
       - "127.0.0.1:5050:80"
-    networks:
-      - shared_network
     environment:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
@@ -46,8 +52,6 @@ services:
       - "127.0.0.1:1433:1433"
     volumes:
       - plandb_data:/var/opt/mssql/
-    networks:
-      - shared_network
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: Pizza1234!@#$
@@ -93,8 +97,6 @@ services:
       - "127.0.0.1:10002:10002"
     volumes:
       - azurite_data:/data/
-    networks:
-      - shared_network
 
   reset_azurite_container_id_card:
     # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
@@ -111,14 +113,21 @@ services:
       AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
     command: [ "./reset-azurite-container.sh", "id-card" ]
 
-  # TODO: redis? https://hub.docker.com/_/redis
+  # TODO: write healthcheck for redis
 
-  # TODO: how pull actual (DB) image when debugging?
+  redis:
+    # https://hub.docker.com/_/redis
+    image: redis
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    # Supposedly, if you want to save snapshots every second when at least one write occurs, the
+    #   following will be your friend.
+    # volumes:
+      # - redis_data:/data
+    # command: redis-server --save 1 1 --log-level warning
 
 volumes:
   eligdb_data:
   plandb_data:
   azurite_data:
-
-networks:
-  shared_network:

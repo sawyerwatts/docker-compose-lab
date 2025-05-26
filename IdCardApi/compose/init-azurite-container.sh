@@ -19,8 +19,18 @@ then
   exit 1
 fi
 
-echo -e "\n> Dropping container $container (if exists)"
-az storage container delete --name "$container"
+num_containers=$(az storage container list | jq "map(select(.name==\"$container\"))" | jq 'length')
+if [ "$num_containers" -eq "0" ]
+then
+  echo -e "\n> Confirmed that the container $container does not exist, will begin initialization"
+elif [ "$num_containers" -eq "1" ]
+then
+  echo -e "\n> The container $container already exists, will not initialize"
+  exit 0
+else
+  echo -e "\n> Somehow more than one container was found with name $container ($num_containers) - this is a coding bug"
+  exit 1
+fi
 
 echo -e "\n> Creating container $container"
 az storage container create --name "$container"

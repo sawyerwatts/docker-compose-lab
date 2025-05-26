@@ -98,7 +98,7 @@ services:
     volumes:
       - azurite_data:/data/
 
-  reset_azurite_container_id_card:
+  init_azurite_container_id_card:
     # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
     # https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
     # https://learn.microsoft.com/en-us/cli/azure/?view=azure-cli-latest
@@ -111,7 +111,7 @@ services:
     working_dir: /setup
     environment:
       AZURE_STORAGE_CONNECTION_STRING: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;
-    command: [ "./reset-azurite-container.sh", "id-card" ]
+    command: [ "./init-azurite-container.sh", "id-card" ]
 
   redis:
     # https://hub.docker.com/_/redis

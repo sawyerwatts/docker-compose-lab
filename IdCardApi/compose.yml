@@ -94,6 +94,8 @@ services:
     networks:
       - shared_network
 
+  # TODO: impl blob container health check
+
   # https://mcr.microsoft.com/en-us/artifact/mar/azure-cli/about
   # https://learn.microsoft.com/en-us/cli/azure/get-started-with-azure-cli?view=azure-cli-latest
   # https://learn.microsoft.com/en-us/cli/azure/?view=azure-cli-latest

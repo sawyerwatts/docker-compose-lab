@@ -57,9 +57,6 @@ families and write them to an output file.
 
 Here're a buncha links to read through.
 
-- [secrets](https://docs.docker.com/compose/how-tos/use-secrets/)
-- [multiple compose files](https://docs.docker.com/compose/how-tos/multiple-compose-files/)
-- [best practices](https://docs.docker.com/build/building/best-practices/)
 - [manuals](https://docs.docker.com/manuals/)
 - [docker docs](https://docs.docker.com/)
 - [dockerfile ref](https://docs.docker.com/reference/dockerfile/)

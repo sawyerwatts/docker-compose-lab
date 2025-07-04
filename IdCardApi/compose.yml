@@ -54,7 +54,18 @@ services:
       - plandb_data:/var/opt/mssql/
     environment:
       ACCEPT_EULA: Y
-      MSSQL_SA_PASSWORD: Pizza1234!@#$
+      MSSQL_SA_PASSWORD: ${PLANDB_SA_PASSWORD}
+    # BUG: figure out why this won't work here
+    # then can remove the healtheck from the seed script
+    # issues with .sh
+    #   Git replaces \n with \r\n - resolve w/ `echo "*.sh text eof=lf" > .gitattributes`
+    #   exec perms don't like to be checked in - prob a way to tell Git to preserve
+    # TODO: don't restart always, restart unless stopped
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P \"$PLANDB_SA_PASSWORD\" -b -Q 'select top 1 * from master.dbo.MSreplication_options'"]
+      interval: 1s
+      timeout: 3s
+      retries: 20
 
   init_plandb:
     # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for

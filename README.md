@@ -53,10 +53,29 @@ sdocker image rm $(sdocker image ls | grep "^id-card-api" | awk -F' ' '{print $1
 This is a (stubbed) console application that uses `IdCardApi` to get ID cards for the relevant
 families and write them to an output file.
 
+TODO: It looks like the best course of action (unless I can find some networking magic) is to:
+
+1. Don't expose ports for services w/in a compose, and have services talk through their shared DNS
+1. Develop code w/in docker image (rip)
+  - Have a local override to add all port exports and have overrides for just connex strs?
+  - how best do? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
+1. Use [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include) to make a
+   god compose that can start anything (recall that `include` can target Git repo paths, and image
+   repo paths!)
+   - Does anything need to be done to allow the svcs to reach across the compose networks?
+   - What if there's dup service names?
+1. Use overrides to use a local compose instead of the Git URL when it is desired to debug a service
+   locally
+1. Use overrides to add in real DB images as needed
+1. Use overrides to expose ports as desired, like for specific DBs and web APIs you wanna look at
+
+TODO: if had a shared service, like event hub, how best do?
+
 ## Misc Links
 
 Here're a buncha links to read through.
 
+- [Best practices](https://docs.docker.com/build/building/best-practices/)
 - [manuals](https://docs.docker.com/manuals/)
 - [docker docs](https://docs.docker.com/)
 - [dockerfile ref](https://docs.docker.com/reference/dockerfile/)

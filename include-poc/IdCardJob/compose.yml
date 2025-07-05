@@ -1,0 +1,17 @@
+services:
+
+  idcardjob_db:
+    # https://hub.docker.com/_/postgres/
+    image: postgres
+    restart: unless-stopped
+    #ports:
+      #- "127.0.0.1:5432:5432"
+    volumes:
+      - idcardjob_db_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: eligdb
+      POSTGRES_USER: sawyer
+      POSTGRES_PASSWORD: pizza
+
+volumes:
+  idcardjob_db_data:

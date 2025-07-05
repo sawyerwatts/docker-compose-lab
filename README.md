@@ -59,19 +59,26 @@ TODO: It looks like the best course of action (unless I can find some networking
 
 1. Don't expose ports for services w/in a compose, and have services talk through their shared DNS
 1. Develop code w/in docker image (rip)
-    - Have a local override to add all port exports and have overrides for just connex strs?
-    - how best do? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
-1. Use [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include) to make a
-   god compose that can start anything (recall that `include` can target Git repo paths, and image
-   repo paths!)
-   - Does anything need to be done to allow the svcs to reach across the compose networks?
-   - What if there's dup service names?
+1. Use [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include) to make a god compose that can
+   start anything (recall that `include` can target Git repo paths, and image repo paths!)
 1. Use overrides to use a local compose instead of the Git URL when it is desired to debug a service
    locally
 1. Use overrides to add in real DB images as needed
 1. Use overrides to expose ports as desired, like for specific DBs and web APIs you wanna look at
 
-TODO: if had a shared service, like event hub, how best do? just put in producer?
+Constraints: essentially, `include` can be conceptualized as a preprocessor macro: it will functionally copy all the
+services, networks, volumes, etc into the parent compose. This means that all services are on the same shared network
+(unless other networking is done), and that resource names need to be globally unique (this does cause a little bit of
+duplication since variables cannot be used in service names, and a little bit of awkwardness in container names when
+running a local compose between the duplication on the compose project name and the hardcoding of the project name in
+the services).
+
+TODO:
+
+- if had a shared service, like event hub, how best do? just put in producer?
+- Have a local override to add all port exports and have overrides for just connex strs?
+- how best code/debug w/in container? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
+- When all done, write a wiki article on all this?
 
 ## Misc Links
 

@@ -1,0 +1,3 @@
+include:
+  - ./IdCardApi/compose.yml
+  - ./IdCardJob/compose.yml

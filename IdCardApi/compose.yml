@@ -12,14 +12,12 @@
 #networks:
 #  shared_network
 
-# TODO: how pull actual (DB) image when debugging?
-
 services:
 
   eligdb:
     # https://hub.docker.com/_/postgres/
     image: postgres
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -34,7 +32,7 @@ services:
     # https://www.pgadmin.org/docs/pgadmin4/9.3/container_deployment.html
     # TODO: It'd be slick to auto-sign in and auto-register the eligdb server
     image: dpage/pgadmin4
-    restart: always
+    restart: unless-stopped
     depends_on:
       - eligdb
     ports:
@@ -47,7 +45,7 @@ services:
     # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
     # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
     image: mcr.microsoft.com/mssql/server:2022-latest
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:1433:1433"
     volumes:
@@ -55,14 +53,8 @@ services:
     environment:
       ACCEPT_EULA: Y
       MSSQL_SA_PASSWORD: ${PLANDB_SA_PASSWORD}
-    # BUG: figure out why this won't work here
-    # then can remove the healtheck from the seed script
-    # issues with .sh
-    #   Git replaces \n with \r\n - resolve w/ `echo "*.sh text eof=lf" > .gitattributes`
-    #   exec perms don't like to be checked in - prob a way to tell Git to preserve
-    # TODO: don't restart always, restart unless stopped
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P \"$PLANDB_SA_PASSWORD\" -b -Q 'select top 1 * from master.dbo.MSreplication_options'"]
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "localhost", "-U", "SA", "-P", "$PLANDB_SA_PASSWORD", "-b", "-Q", "select top 1 * from master.dbo.MSreplication_options" ]
       interval: 1s
       timeout: 3s
       retries: 20
@@ -70,7 +62,10 @@ services:
   init_plandb:
     # In a more realistic dev env, you'll probably want to use a migrator tool, but this works for
     # Sawyer's local playground, and it's a decent example of initializing a container (although it's
-    # always worth considering if an initialization container would be more appropriate).
+    # always worth considering if an init container would be more appropriate than an init script).
+    # WARNING: there are some common issues with .sh:
+    #   - Git replaces \n with \r\n - resolve w/ `echo "*.sh text eof=lf" > .gitattributes`
+    #   - exec perms don't like to be checked in - prob a way to tell Git to preserve
     image: mcr.microsoft.com/mssql/server:2022-latest
     depends_on:
       - plandb
@@ -81,7 +76,7 @@ services:
     working_dir: /setup
     environment:
       ACCEPT_EULA: Y
-      MSSQL_SA_PASSWORD: Pizza1234!@#$
+      MSSQL_SA_PASSWORD: ${PLANDB_SA_PASSWORD}
     command: [ "./init-mssql-db.sh", "plandb" ]
 
   azurite:
@@ -100,7 +95,7 @@ services:
     # To create more accounts, create env var AZURITE_ACCOUNTS with value "account1:key1;account2:key1:key2"
     #   (where the keys are base 64 encoded). Note that this will disable the default account.
     image: mcr.microsoft.com/azure-storage/azurite
-    restart: always
+    restart: unless-stopped
     ports:
       # Azure Storage Explorer doesn't play nice with ipv6, so localhost seemingly must used.
       - "127.0.0.1:10000:10000"
@@ -127,7 +122,7 @@ services:
   redis:
     # https://hub.docker.com/_/redis
     image: redis
-    restart: always
+    restart: unless-stopped
     ports:
       - "127.0.0.1:6379:6379"
     # The docs suggest that it's possible to have redis create snapshots and to make a volume for

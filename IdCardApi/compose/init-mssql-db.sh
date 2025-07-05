@@ -24,28 +24,6 @@ function sqlcmd()
   /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$MSSQL_SA_PASSWORD" -b "$@"
 }
 
-echo -e "\n> Repeatedly checking if the DB server is up before continuing"
-ready=false
-for i in {1..20}
-do
-  echo -e "\n> Attempt $i"
-  result=$(sqlcmd -Q "if db_id('master') is not null print 'ready'" || true)
-  if [[ "$result" == "ready" ]]
-  then
-    ready=true
-    echo -e "\n> The DB server is up, continuing"
-    break
-  fi
-  echo -e "\n> Sleeping"
-  sleep 0.25s
-done
-
-if ! $ready
-then
-  echo -e "\n> The DB server did not come up, cannot continue"
-  exit 1
-fi
-
 result=$(sqlcmd -Q "if db_id('$db') is not null print 'exists'" || true)
 if [[ "$result" == "exists" ]]
 then

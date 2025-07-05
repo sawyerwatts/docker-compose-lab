@@ -35,6 +35,8 @@ appears to not like parent directory traversals):
 sdocker build -t id-card-api:latest -f ./src/Api/Dockerfile .
 ```
 
+*NOTE*: A lot of these all-in-one comands can be made simpler with `docker compose SVC -q`
+
 Here's an all-in-one command to create the image and run it (attached).
 
 ```shell
@@ -57,8 +59,8 @@ TODO: It looks like the best course of action (unless I can find some networking
 
 1. Don't expose ports for services w/in a compose, and have services talk through their shared DNS
 1. Develop code w/in docker image (rip)
-  - Have a local override to add all port exports and have overrides for just connex strs?
-  - how best do? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
+    - Have a local override to add all port exports and have overrides for just connex strs?
+    - how best do? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
 1. Use [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include) to make a
    god compose that can start anything (recall that `include` can target Git repo paths, and image
    repo paths!)
@@ -69,7 +71,7 @@ TODO: It looks like the best course of action (unless I can find some networking
 1. Use overrides to add in real DB images as needed
 1. Use overrides to expose ports as desired, like for specific DBs and web APIs you wanna look at
 
-TODO: if had a shared service, like event hub, how best do?
+TODO: if had a shared service, like event hub, how best do? just put in producer?
 
 ## Misc Links
 

@@ -1,20 +1,15 @@
-include:
-  - ${IDCARDAPI_COMPOSE_PATH_OVERRIDE:-../IdCardApi/compose.yml}
-
 services:
 
-  idcardjob_db:
+  baseapi_db:
     # https://hub.docker.com/_/postgres/
     image: postgres
     restart: unless-stopped
     volumes:
-      - idcardjob_db_data:/var/lib/postgresql/data/
+      - baseapi_db_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: eligdb
       POSTGRES_USER: sawyer
       POSTGRES_PASSWORD: pizza
-    depends_on:
-      - idcardapi_db
 
 volumes:
-  idcardjob_db_data:
+  baseapi_db_data:

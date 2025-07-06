@@ -1,17 +1,20 @@
+include:
+  - ../BaseApi/compose.yml
+
 services:
 
   idcardapi_db:
     # https://hub.docker.com/_/postgres/
     image: postgres
     restart: unless-stopped
-    #ports:
-      #- "127.0.0.1:5432:5432"
     volumes:
       - idcardapi_db_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: eligdb
       POSTGRES_USER: sawyer
       POSTGRES_PASSWORD: pizza
+    depends_on:
+      - baseapi_db
 
 volumes:
   idcardapi_db_data:

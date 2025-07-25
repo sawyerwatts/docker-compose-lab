@@ -18,8 +18,8 @@ services:
     # https://hub.docker.com/_/postgres/
     image: postgres
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:5432:5432"
+    #ports:
+      #- "127.0.0.1:5432:5432"
     volumes:
       - eligdb_data:/var/lib/postgresql/data/
       - ./compose/eligdb/:/docker-entrypoint-initdb.d/
@@ -35,19 +35,19 @@ services:
     restart: unless-stopped
     depends_on:
       - eligdb
-    ports:
-      - "127.0.0.1:5050:80"
+    #ports:
+      #- "127.0.0.1:5050:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: sawyer@fake.com
       PGADMIN_DEFAULT_PASSWORD: pizza
 
   plandb:
-    # You'll need to set <InvariantGlobalization> to false in csproj since Linux or set env var
+    # You may need to set <InvariantGlobalization> to false in csproj since Linux or set env var
     # DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false for .NET
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:1433:1433"
+    #ports:
+      #- "127.0.0.1:1433:1433"
     volumes:
       - plandb_data:/var/opt/mssql/
     environment:
@@ -96,11 +96,11 @@ services:
     #   (where the keys are base 64 encoded). Note that this will disable the default account.
     image: mcr.microsoft.com/azure-storage/azurite
     restart: unless-stopped
-    ports:
-      # Azure Storage Explorer doesn't play nice with ipv6, so localhost seemingly must used.
-      - "127.0.0.1:10000:10000"
-      - "127.0.0.1:10001:10001"
-      - "127.0.0.1:10002:10002"
+    #ports:
+      # Azure Storage Explorer doesn't play nice with ipv6, so localhost/127.0.0.1 seemingly must be used.
+      #- "127.0.0.1:10000:10000"
+      #- "127.0.0.1:10001:10001"
+      #- "127.0.0.1:10002:10002"
     volumes:
       - azurite_data:/data/
 
@@ -123,10 +123,13 @@ services:
     # https://hub.docker.com/_/redis
     image: redis
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:6379:6379"
+    #ports:
+      #- "127.0.0.1:6379:6379"
     # The docs suggest that it's possible to have redis create snapshots and to make a volume for
     # those snapshots, but it was being weird, and it's redis, so whatev.
+
+  # TODO: add svc for the .net api itself, w/ dependencies on all the other crap and a healthcheck
+  #   will need a dockerfile for api itself too
 
 volumes:
   eligdb_data:

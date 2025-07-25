@@ -2,14 +2,14 @@
 
 This repo is a lab for me to get more hands-on with Docker with .NET, and especially Docker Compose. The
 ultimate goal is to experience what it would take to write a microservices architecture that could be developed locally
-in a disconnected environment, and that could be used to debug the system as a whole. More specifically:
+in a disconnected environment, and that could be used to debug the microservice sea as a whole. More specifically:
 
 - Add a number of common services to a Docker Compose to gain experience setting those up and with Docker Compose
   itself.
 - Locally, be able to develop a .NET API that has all of its dependencies `docker compose`-ed, especially if one of
   those dependencies is another .NET API that I have built in another repo.
-- Locally, be able to kick off the entrypoint microservice and easily run, and debug, any part of the microservice sea
-  as needed.
+- Locally, be able to kick off an entrypoint microservice and easily run, and debug, any upstream microservice (direct
+  or indirect).
 - Understand how to easily swap out mocked database images with "real", deidentified database images to allow for more
   robust local debugging, regardless of the depth of that database within the microservice sea.
 
@@ -19,42 +19,10 @@ For all the commands in this file, the following alias exists (because Docker on
 alias sdocker='sudo docker'
 ```
 
-Recall that the following can be used to interactively play with an image.
-
-```shell
-sdocker run -it IMAGE
-```
-
 ## IdCardApi
 
-This is a (stubbed) API to build ID cards from the database, and cache the result.
-
-```shell
-sdocker compose down -v; sdocker compose up -d && sdocker compose ps -a && sdocker ps && sdocker volume ls && sdocker network ls
-```
-
-Here's how to build the image for the API (this needs to be ran from the sln dir because Docker
-appears to not like parent directory traversals):
-
-```shell
-# sdocker build -t id-card-api:$(date +%s) -f ./src/Api/Dockerfile .
-sdocker build -t id-card-api:latest -f ./src/Api/Dockerfile .
-```
-
-*NOTE*: A lot of these all-in-one comands can be made simpler with `docker compose SVC -q`
-
-Here's an all-in-one command to create the image and run it (attached).
-
-```shell
-sdocker build -t id-card-api:latest -f ./src/Api/Dockerfile . \
-  && sdocker run -p "[::1]:8080:8080" -e "ASPNETCORE_ENVIRONMENT=Development" id-card-api:latest
-```
-
-Here's a helpful lil command to clean up many images within a tag:
-
-```shell
-sdocker image rm $(sdocker image ls | grep "^id-card-api" | awk -F' ' '{print $1 ":" $2}')
-```
+[This repository](https://github.com/sawyerwatts/docker-compose-lab-idcardapi) contains a dependee .NET API that has a "
+lot" of containerized dependencies.
 
 ## IdCardJob
 
@@ -110,7 +78,7 @@ and one section detailing how to debug this repo when running the system as a wh
 #### Development Setup
 
 1. In the root of the repo, create a `compose.yml` with the necessary dependencies (including `include`s to Git URLs).
-1. In the root of the repo, create a dockerfile for the API, and add that service to `compose.yml`.
+1. In the API direcotry, create a dockerfile for the API, and add that service to `compose.yml`.
    - Add all the dependencies to this API service.
    - If the API has a healthcheck, add that to the compose service as well.
    - TODO: whatever needs to be done for dev w/in a container
@@ -160,27 +128,35 @@ TODO: this
 
 ### TODO
 
+- make sure the required/recommended conventions are documented
+  - [ ] globally unique service names
+  - [ ] `depends_on`, and ideally `healthcheck`
+  - [ ] compose service `*_start_dependencies`
+  - [ ] `compose.override.yml` to export dependencies' ports (for ease of access)
+  - [ ] Rider run config setup
+  - [ ] `launchSettings.json` (with it's the .NET environment env var) and .NET user secrets don't work in debugged
+    container
+    - Maybe if a devcontainer was used, then .NET user secrets could be stored there and things would work more normally
 - Actually impl both styles, and make actual repos so can check that each style works in isolation, cumulatively, and
   when debugging dependees.
     - will prob need to have env vars to allow for overriding (use default if var is unset or blank)
       `${IDCARDAPI_COMPOSE_INCLUDE_PATH_OVERRIDE:-../IdCardApi/compose.yml}`
 - how seeding when using containerized DB: have a supplement `.env.db` to override all db image URLs and the bool
   controlling seeding
-- what if a compose makes an local network? are its services still in the default network too?
-- Does merge use local or a global compose proj name(s)?
+  - what if multiple svcs use the same source db?
 - if had a shared service, like event hub, how best do locally and globally? just put in producer?
-- Have a local override to add all port exports and have overrides for just connex strs?
-- how best code/debug w/in container? [docker compose watch](https://docs.docker.com/compose/how-tos/file-watch/)?
+- Does merge use local or a global compose proj name(s)?
 - When all done, write a wiki article on all this?
 - Compose Extend a common SVC from git URL?
+- at the very end of the overall lab, see how well VS and VS Code jive with this pattern
 
 ## Misc Links
 
 Here're a buncha links to read through.
 
+- [docker compose env vars](https://docs.docker.com/compose/how-tos/environment-variables/)
 - [Best practices](https://docs.docker.com/build/building/best-practices/)
 - [docker compose](https://docs.docker.com/compose/)
 - [manuals](https://docs.docker.com/manuals/)
 - [docker docs](https://docs.docker.com/)
 - [dockerfile ref](https://docs.docker.com/reference/dockerfile/)
-

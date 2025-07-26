@@ -2,7 +2,8 @@
 
 This repo is a lab for me to get more hands-on with Docker with .NET, and especially Docker Compose. The
 ultimate goal is to experience what it would take to write a microservices architecture that could be developed locally
-in a disconnected environment, and that could be used to debug the microservice sea as a whole. More specifically:
+in a disconnected environment, and that could be used to debug the microservice sea as a whole (assuming there are some
+direct web API invocations and not purely messaging/events between services). More specifically:
 
 - Add a number of common services to a Docker Compose to gain experience setting those up and with Docker Compose
   itself.
@@ -13,46 +14,75 @@ in a disconnected environment, and that could be used to debug the microservice 
 - Understand how to easily swap out mocked database images with "real", deidentified database images to allow for more
   robust local debugging, regardless of the depth of that database within the microservice sea.
 
-For all the commands in this file, the following alias exists (because Docker on Linux):
+Starting docker:
 
 ```shell
-alias sdocker='sudo docker'
+# Normally:
+sudo systemctl start docker
+
+# If rootless:
+systemctl --user start docker
 ```
 
 ## IdCardApi
 
 [This repository](https://github.com/sawyerwatts/docker-compose-lab-idcardapi) contains a dependee .NET API that has a "
-lot" of containerized dependencies.
+lot" of containerized dependencies, and is an example of an upstream service.
 
 ## IdCardJob
 
 This is a (stubbed) console application that uses `IdCardApi` to get ID cards for the relevant
-families and write them to an output file.
+families and write them to an output file. This is an example of a downstream service.
 
 ## Dependencies between compose projects
 
-To best manage dependencies between compose projects, `include` is a powerful instruction that recursively merges
+To be able to work with multiple compose projects, `include` is a powerful instruction that recursively merges
 many composes together, which imposes some constraints and conventions (some of which gets more awkward since compose
-services cannot use variables in their names):
+services cannot use variables in their names). As such, here are rules for create composes with the objective of letting
+any dependency be run locally so that the current service can be debugged locally (and used as a dependency later):
 
-1. Don't expose ports for services w/in any compose, and have services talk through their shared DNS
-1. Make sure all compose resources (services, volumes, networks, etc) names are globally unique. This is a lil
-  awkward, but by far the least awkward choice that exists. Prob want to just prefix all resources with the
-  repo/solution name
-   - Similarly, make all environment variable names unique since they are all loaded into a shared shell; otherwise,
-     here be dragons.
-1. When making the compose service for the app itself (more on that below), be sure to add dependencies on all of the
-   relevant services, and if the app has a healthcheck API, check that as well.
-1. Recall that `include` supports a file path, a Git URL, or an OCI URL. As such, the default choice should be a Git URL
-   or OCI URL so that dependencies can be managed by Docker and not by developers. However, if it is desirable to be
-   able to debug a dependee, variable interpolation can be used in the `include` list elements to default to the Git/OCI
-   URL while allowing for easy opting into running a local copy; here is an example, where if env var
-   `IDCARDAPI_INCLUDE_OVERRIDE` is not set or is blank, then the URL will be used instead
+- [ ] Have a `Dockerfile` to build and run the API, with the goal that .NET's `Development` environment will be used to
+  run the API as a local compose service (as well as copying `appsettings.Docker.json` overtop
+  `appsettings.Development.json`). See the settings strategy below.
+- [ ] Create a `compose.yml` with the following constraints:
+    - [ ] Environment variables should be globally unique unless explicitly desired otherwise.
+        - This is because environment variables are shared between all composes, so they can override each other and
+          cause weird behavior.
+    - [ ] Make sure all compose resources' (services, volumes, networks, etc) names are globally unique - probably just
+      prefix the repo onto the names.
+        - Otherwise, the `Include` can encounter colliding resource names.
+    - [ ] Don't expose any ports for services w/in any compose, and instead of using `localhost`, resolve domains
+      through
+      Docker's DNS. Export the API's dependencies' ports in `compose.override.yml`.
+        - This is because if two composes export the same port, they'll collide.
+    - [ ] Create a `*_start_depencenies` service, and have it `depend_on` any `Include`-ed services as needed.
+        - When running or debugging this API on the host machine, this will let us easily start the API's dependencies
+          via `docker compose up -d example_start_dependencies`
+    - [ ] `Include` the necessary compose files for upstream services and have `*_start_dependencies` `depend_on` every
+      direct dependency of this API
+    - [ ] Create each of this API's upstream services, ideally each with a healthcheck, and add each to the `depend_on`
+      within the `*_start_depencenies` service
+        - [ ] If a shared service is needed, like an event hub, the upstream dependee (the producer) should create it,
+          and then the downstream dependee (the consumer) should use what was already created.
+    - [ ] Make a service for this API's `Dockerfile`, and make it `depend_on` the `*_start_depencenies` service.
+      Ideally, this API service will also have a `healthcheck`.
+        - This will let downstream composes `depend_on` this API while starting up all this API's dependencies.
+- [ ] Settings strategy
+    - [ ] `appsettings.Docker.json` should have the settings to run the API as a compose service, so it uses
+      compose's DNS to reference its dependencies via their compose service name. There should be no need or reason to
+      add non-compose secrets in this file since all dependencies should be mocked.
+        - [ ] If not every service and secret can be mocked, put those into a `.env` or something, my condolences.
+    - [ ] `appsettings.Development.json` should have the settings to run and debug the API on the host machine, like
+      using `localhost` and the ports exported by `compose.override.yml`. This should not contain non-compose secrets.
+    - [ ] .NET user secrets should have the confidential settings / secrets to run and debug on the host machine,
+      presumably against an actual deployed DB, since these will override `appsettings.Development.json`
+    - Depending on the deployed settings strategy, the duplication between `appsettings.Docker.json` and
+      `appsettings.Development.json` can be removed.
 
-   ```yml
-   include:
-     - ${IDCARDAPI_INCLUDE_OVERRIDE:-https://www.fake.com/sawyerwatts/idcardapi.git/compose.yml}
-   ```
+To run or debug this API locally, it should be as simple as `docker compose up -d example_start_dependencies` and then
+running or debugging the API using an IDE or `dotnet run`.
+
+### `compose.override.yml` fun facts
 
 Here are some misc background tidbits:
 
@@ -61,7 +91,7 @@ Here are some misc background tidbits:
 - When using multiple composes, dry runs are very much your friend here:
 
     ```shell
-    sdocker compose up --dry-run
+    docker compose up --dry-run
     ```
 
 With these constraints in mind, I see two broad conventions to implement a multi compose environment, and the deciding
@@ -73,90 +103,40 @@ This assumes a .NET app architecture with a solution, and a subdirectory for an 
 There will be two sections per convention: one section detailing how to configure the repo for isolated development,
 and one section detailing how to debug this repo when running the system as a whole.
 
-### Developing inside a container
-
-#### Development Setup
-
-1. In the root of the repo, create a `compose.yml` with the necessary dependencies (including `include`s to Git URLs).
-1. In the API direcotry, create a dockerfile for the API, and add that service to `compose.yml`.
-   - Add all the dependencies to this API service.
-   - If the API has a healthcheck, add that to the compose service as well.
-   - TODO: whatever needs to be done for dev w/in a container
-1. Configure the API's `appsettings.Development.json` to use connection strings, host names, and ports to go through
-   `compose.yml`'s DNS (AKA the hostname is the compose service name).
-1. In the root of the repo, create a `compose.override.yml` which exposes the ports on whatever you would like to
-   access from the host machine, like a PGAdmin webpage, swagger webpage, or a DB to query.
-
-#### System Debugging
-
-1. When this API is a dependee, to debug this API, set the `*_INCLUDE_OVERRIDE` environment variable to the file path of
-   the cloned `compose.yml`.
-   - TODO: is it really this easy? prob need to start it first tho or something
-
-### Developing outside a container
-
-#### Development Setup
-
-1. In the root of the repo, create a `compose.yml` with the necessary dependencies (including `include`s).
-1. In `compose.yml`, create a compose service named `dependencies` that has dependencies on all the dependencies.
-1. In the root of the repo, create a `compose.override.yml` that exposes the ports of the dependencies to the host
-   machine.
-1. Configure the API's `appsettings.Development.json` to use connection strings, host names, and ports that access the
-   host machine's ports that were just exposed.
-1. In the root of the repo, create a dockerfile for the API, and add that service to `compose.yml`.
-   - The compose service should have dependencies on all the dependencies.
-   - Within the dockerfile, have a flag to set environment variables for the final image, and these variables should be
-     the connection strings, host names, and ports to have the containerized app.
-
-TODO: finish this and test it
-
-#### System Debugging
-
-TODO: this
-
-### Unorganized
-
-1. Make the dependee compose
-1. Make the dependent compose, and use [include](https://docs.docker.com/compose/how-tos/multiple-compose-files/include)
-   to bring in the dependee compose's Git URL (or the relative disk path when then composes are in the same repo).
-   Recall that OCIs can be used as well, if the dependee compose has been published there.
-1. Overrides can be used for a variety of reasons (ideally via a global override from the dependent project that starts
-   the compose):
-   1. To run a local version of the dependee, use overrides to use a local compose path instead of the Git URL 
-   1. To use a real DB image for better debugging, use overrides as well
-   1. To expose service ports that are desired, like a swagger webpage or DB or pgadmin, use overrides as well
-
 ### TODO
 
-- make sure the required/recommended conventions are documented
-  - [ ] globally unique service names
-  - [ ] `depends_on`, and ideally `healthcheck`
-  - [ ] compose service `*_start_dependencies`
-  - [ ] `compose.override.yml` to export dependencies' ports (for ease of access)
-  - [ ] Rider run config setup
-  - [ ] `launchSettings.json` (with it's the .NET environment env var) and .NET user secrets don't work in debugged
-    container
-    - Maybe if a devcontainer was used, then .NET user secrets could be stored there and things would work more normally
-- Actually impl both styles, and make actual repos so can check that each style works in isolation, cumulatively, and
-  when debugging dependees.
+- add healthchecks per TODOs in idcarapi's compose
+- build `IdCardJob` and verify everything works as expected
+- doc that debugging any upstream service is v hard, at least if you don't like needing to reinstall your IDE constantly
+  into every dev container, and then also having to figure out how to get ides to play nice with compose and dev
+  containers.
+    - Could prob still redirect compose includes to use local path so could printf debug
+        - what if could use dev containers to debug upstream services if truly needed?
+        - maybe a "manual" "dev container"? like ssh into a container w/ code, work there, export the port, and run the
+          code?
+- explore/doc overrides
+    - [ ] Recall that `include` supports a file path, a Git URL, or an OCI URL. As such, the default choice should be a
+      Git URL or OCI URL so that dependencies can be managed by Docker and not by developers. However, if it is
+      desirable to be able to debug a dependee, variable interpolation can be used in the `include` list elements to
+      default to the Git/OCI URL while allowing for easy opting into running a local copy; here is an example, where if
+      env var `IDCARDAPI_INCLUDE_OVERRIDE` is not set or is blank, then the URL will be used instead
+    1. To run a local version of the dependee, use overrides to use a local compose path instead of the Git URL
+    1. To use a real DB image for better debugging, use overrides as well
+        - how seeding when using containerized DB: have a supplement `.env.db` to override all db image URLs and the
+          bool controlling seeding
+            - what if multiple svcs use the same source db?
+    1. To expose service ports that are desired, like a swagger webpage or DB or pgadmin, use overrides as well
+
     - will prob need to have env vars to allow for overriding (use default if var is unset or blank)
       `${IDCARDAPI_COMPOSE_INCLUDE_PATH_OVERRIDE:-../IdCardApi/compose.yml}`
-- how seeding when using containerized DB: have a supplement `.env.db` to override all db image URLs and the bool
-  controlling seeding
-  - what if multiple svcs use the same source db?
-- if had a shared service, like event hub, how best do locally and globally? just put in producer?
-- Does merge use local or a global compose proj name(s)?
+
+   ```yml
+   include:
+     - ${OVERRIDE_INCLUDE_IDCARDAPI:-https://www.fake.com/sawyerwatts/idcardapi.git/compose.yml}
+   ```
+- how could the docker settings n compose be checked? have the ci/cd run docker compose up the api?
+- what if there's a circular dependency b/w dependencies? will compose be happy?
+- Make a common services for myself (put in lab and extend in api lab?)
+- Make an upstream SVC for idcardapi and verify the env var hopping works as hypothesized
+- Once completed lab, install onto a podman and then rancher vms to see if it works there too
 - When all done, write a wiki article on all this?
-- Compose Extend a common SVC from git URL?
-- at the very end of the overall lab, see how well VS and VS Code jive with this pattern
-
-## Misc Links
-
-Here're a buncha links to read through.
-
-- [docker compose env vars](https://docs.docker.com/compose/how-tos/environment-variables/)
-- [Best practices](https://docs.docker.com/build/building/best-practices/)
-- [docker compose](https://docs.docker.com/compose/)
-- [manuals](https://docs.docker.com/manuals/)
-- [docker docs](https://docs.docker.com/)
-- [dockerfile ref](https://docs.docker.com/reference/dockerfile/)

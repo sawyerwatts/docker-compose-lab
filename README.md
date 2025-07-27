@@ -105,6 +105,18 @@ and one section detailing how to debug this repo when running the system as a wh
 
 ### TODO
 
+- try other ways to orchestrate everything, esp to be able to debug anything
+    - have subdomains or a proxy or something so all services can be accessible, and then could prob make anything
+      debuggable
+        - see [traefik service](/home/swatts/Code/docker/0-getting-started-todo-app/compose.yml) to route?
+        - https://github.com/yrutschle/sslh/issues/411#issuecomment-1791197322
+        - https://docs.docker.com/reference/compose-file/services/#hostname
+        - https://docs.docker.com/engine/network/tutorials/host/
+        - https://docs.docker.com/reference/compose-file/services/#extra_hosts
+        - https://forums.docker.com/t/is-there-any-way-to-set-multiple-subdomain-for-a-container/147857
+        - access docker compose service on host machine via docker dns
+    - Every SVC could export its ports, and ports used could be globally managed in a wiki or something, or maybe a god
+      compose to override all ports to uniq?
 - add healthchecks per TODOs in idcarapi's compose
 - build `IdCardJob` and verify everything works as expected
 - doc that debugging any upstream service is v hard, at least if you don't like needing to reinstall your IDE constantly
@@ -120,6 +132,7 @@ and one section detailing how to debug this repo when running the system as a wh
       desirable to be able to debug a dependee, variable interpolation can be used in the `include` list elements to
       default to the Git/OCI URL while allowing for easy opting into running a local copy; here is an example, where if
       env var `IDCARDAPI_INCLUDE_OVERRIDE` is not set or is blank, then the URL will be used instead
+
     1. To run a local version of the dependee, use overrides to use a local compose path instead of the Git URL
     1. To use a real DB image for better debugging, use overrides as well
         - how seeding when using containerized DB: have a supplement `.env.db` to override all db image URLs and the

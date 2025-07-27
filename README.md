@@ -105,19 +105,17 @@ and one section detailing how to debug this repo when running the system as a wh
 
 ### TODO
 
-- try other ways to orchestrate everything, esp to be able to debug anything
-    - have subdomains or a proxy or something so all services can be accessible, and then could prob make anything
-      debuggable
-        - see [traefik service](/home/swatts/Code/docker/0-getting-started-todo-app/compose.yml) to route?
-        - https://github.com/yrutschle/sslh/issues/411#issuecomment-1791197322
-        - https://docs.docker.com/reference/compose-file/services/#hostname
-        - https://docs.docker.com/engine/network/tutorials/host/
-        - https://docs.docker.com/reference/compose-file/services/#extra_hosts
-        - https://forums.docker.com/t/is-there-any-way-to-set-multiple-subdomain-for-a-container/147857
-        - access docker compose service on host machine via docker dns
-    - Every SVC could export its ports, and ports used could be globally managed in a wiki or something, or maybe a god
-      compose to override all ports to uniq?
+- direct includes vs top-level god compose of custom services
+- using the direct includes model, you could debug any API without dev containers if:
+    1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose
+    2. when an API is `depend_on`-ed, there is no container status check (since starting a container for an already
+       running port would fail)
+       - TODO: would `depend_on` fail if one of the dependencies failed to come up? may need to set `required` to false
+       - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
+       - alt: only start the service if the port isn't used
+    3. override the include paths to ensure drift is caught b/w local and remote
 - add healthchecks per TODOs in idcarapi's compose
+- prob want a base services file with pgamin n stuff
 - build `IdCardJob` and verify everything works as expected
 - doc that debugging any upstream service is v hard, at least if you don't like needing to reinstall your IDE constantly
   into every dev container, and then also having to figure out how to get ides to play nice with compose and dev

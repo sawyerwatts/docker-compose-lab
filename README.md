@@ -105,7 +105,11 @@ and one section detailing how to debug this repo when running the system as a wh
 
 ### TODO
 
+- make sure it's easy to docker/code with single button press
 - direct includes vs top-level god compose of custom services
+- add healthchecks per TODOs in idcarapi's compose
+- prob want a base services file with pgamin n stuff
+- build `IdCardJob` and verify everything works as expected
 - using the direct includes model, you could debug any API without dev containers if:
     1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose
     2. when an API is `depend_on`-ed, there is no container status check (since starting a container for an already
@@ -114,9 +118,6 @@ and one section detailing how to debug this repo when running the system as a wh
        - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
        - alt: only start the service if the port isn't used
     3. override the include paths to ensure drift is caught b/w local and remote
-- add healthchecks per TODOs in idcarapi's compose
-- prob want a base services file with pgamin n stuff
-- build `IdCardJob` and verify everything works as expected
 - doc that debugging any upstream service is v hard, at least if you don't like needing to reinstall your IDE constantly
   into every dev container, and then also having to figure out how to get ides to play nice with compose and dev
   containers.

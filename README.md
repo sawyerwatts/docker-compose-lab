@@ -107,24 +107,17 @@ and one section detailing how to debug this repo when running the system as a wh
 
 `docker inspect --format "{{json .State.Health }}" <container name> | jq`
 
-### Rebuilding a dockerfile
+### Rebuilding a local Dockerfile
 
 When making changes to a local Dockerfile that's being run through Docker Compose, you'll need to apply the `--build`
 flag to have Docker Compose rebuild the image.
 
 ### TODO
 
+- what if there's a circular dependency b/w dependencies? will compose be happy?
+- Make a common services for myself (put in lab and extend in api lab?)
 - build `IdCardJob` and verify everything works as expected
-- direct includes vs top-level god compose of custom services
-- using the direct includes model, you could debug any API without dev containers if:
-    1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose (
-       good luck)
-    2. when an API is `depend_on`-ed, there is no container status check (since starting a container for an already
-       running port would fail)
-        - TODO: would `depend_on` fail if one of the dependencies failed to come up? may need to set `required` to false
-        - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
-        - alt: only start the service if the port isn't used
-    3. override the include paths to ensure drift is caught b/w local and remote
+    - how could the docker settings n compose be checked? add `docker compose up --dry-run` to pipeline?
 - explore/doc overrides
     - [ ] Recall that `include` supports a file path, a Git URL, or an OCI URL. As such, the default choice should be a
       Git URL or OCI URL so that dependencies can be managed by Docker and not by developers. However, if it is
@@ -146,9 +139,16 @@ flag to have Docker Compose rebuild the image.
    include:
      - ${OVERRIDE_INCLUDE_IDCARDAPI:-https://www.fake.com/sawyerwatts/idcardapi.git/compose.yml}
    ```
-- how could the docker settings n compose be checked? have the ci/cd run docker compose up the api?
-- what if there's a circular dependency b/w dependencies? will compose be happy?
-- Make a common services for myself (put in lab and extend in api lab?)
+- direct includes vs top-level god compose of custom services
+- using the direct includes model, you could debug any API without dev containers if:
+    1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose (
+       good luck)
+    2. when an API is `depend_on`-ed, there is no container status check (since starting a container for an already
+       running port would fail)
+        - TODO: would `depend_on` fail if one of the dependencies failed to come up? may need to set `required` to false
+        - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
+        - alt: only start the service if the port isn't used
+    3. override the include paths to ensure drift is caught b/w local and remote
 - Make an upstream SVC for idcardapi and verify the env var hopping works as hypothesized
 - Once completed lab, install onto a podman and then rancher vms to see if it works there too
 - When all done, write a wiki article on all this?

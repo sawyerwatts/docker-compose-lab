@@ -103,28 +103,28 @@ This assumes a .NET app architecture with a solution, and a subdirectory for an 
 There will be two sections per convention: one section detailing how to configure the repo for isolated development,
 and one section detailing how to debug this repo when running the system as a whole.
 
+### Checking Healthcheck Logs
+
+`docker inspect --format "{{json .State.Health }}" <container name> | jq`
+
+### Rebuilding a dockerfile
+
+When making changes to a local Dockerfile that's being run through Docker Compose, you'll need to apply the `--build`
+flag to have Docker Compose rebuild the image.
+
 ### TODO
 
-- make sure it's easy to docker/code with single button press
-- direct includes vs top-level god compose of custom services
-- add healthchecks per TODOs in idcarapi's compose
-- prob want a base services file with pgamin n stuff
 - build `IdCardJob` and verify everything works as expected
+- direct includes vs top-level god compose of custom services
 - using the direct includes model, you could debug any API without dev containers if:
-    1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose
+    1. all services resolved to unique, deterministic host ports regardless of starting on host vs via docker compose (
+       good luck)
     2. when an API is `depend_on`-ed, there is no container status check (since starting a container for an already
        running port would fail)
-       - TODO: would `depend_on` fail if one of the dependencies failed to come up? may need to set `required` to false
-       - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
-       - alt: only start the service if the port isn't used
+        - TODO: would `depend_on` fail if one of the dependencies failed to come up? may need to set `required` to false
+        - TODO: maybe also use an env var to opt-out of requiring a dependency to be required?
+        - alt: only start the service if the port isn't used
     3. override the include paths to ensure drift is caught b/w local and remote
-- doc that debugging any upstream service is v hard, at least if you don't like needing to reinstall your IDE constantly
-  into every dev container, and then also having to figure out how to get ides to play nice with compose and dev
-  containers.
-    - Could prob still redirect compose includes to use local path so could printf debug
-        - what if could use dev containers to debug upstream services if truly needed?
-        - maybe a "manual" "dev container"? like ssh into a container w/ code, work there, export the port, and run the
-          code?
 - explore/doc overrides
     - [ ] Recall that `include` supports a file path, a Git URL, or an OCI URL. As such, the default choice should be a
       Git URL or OCI URL so that dependencies can be managed by Docker and not by developers. However, if it is

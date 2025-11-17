@@ -24,6 +24,14 @@ sudo systemctl start docker
 systemctl --user start docker
 ```
 
+## TLDR
+
+Basically, there are two ways that look intended by Docker Compose when working with many
+microservices (using `depends_on` and `include` for best results).
+
+1. Each microservice's compose to reference other repos' composes. This is detailed more below.
+1. There is a global compose that references other repos' composes.
+
 ## IdCardApi
 
 [This repository](https://github.com/sawyerwatts/docker-compose-lab-idcardapi) contains a dependee .NET API that has a "
